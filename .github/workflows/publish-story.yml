@@ -1,9 +1,9 @@
-name: Publish Facebook Stories
+name: Publish Facebook Stories (every 30 min)
 
 on:
   workflow_dispatch: {}   # تشغيل يدوي من واجهة GitHub
-  # schedule:
-  #   - cron: "0 */2 * * *"   # إلغاء التعليق لو عايز تشغيل كل ساعتين
+  schedule:
+    - cron: "*/30 * * * *"   # كل نصف ساعة
 
 jobs:
   publish-stories:
@@ -27,7 +27,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create fonts/output folders if missing
+      - name: Create folders
         run: |
           mkdir -p fonts
           mkdir -p output
@@ -36,13 +36,14 @@ jobs:
         env:
           FB_TOKEN: ${{ secrets.FB_TOKEN }}
           PAGE_ID: ${{ secrets.PAGE_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FONT_PATH: ./fonts/ad.ttf
           OUTPUT_DIR: ./output
           LOG_FILE: ./output/action_log.txt
         run: |
           python fb_story_scheduler.py
 
-      - name: Upload generated images (artifact)
+      - name: Upload artifacts (images + logs)
         if: always()
         uses: actions/upload-artifact@v4
         with:
